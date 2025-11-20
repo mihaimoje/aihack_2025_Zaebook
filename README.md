@@ -60,6 +60,12 @@ python setup.py install /path/to/repo
 4. If rejected, open the dashboard to view issues and chat with AI
 5. Optionally bypass review with "Commit Anyway"
 
+**Bypass AI Review:**
+```bash
+# Skip the pre-commit hook entirely
+git commit -m "message" --no-verify
+```
+
 ### Dashboard
 
 Access at `http://localhost:5000` to:

@@ -123,7 +123,8 @@ def main():
     # 2. Send to Backend
     try:
         repo_path = os.getcwd()
-        payload = json.dumps({{"diff": diff, "repoPath": repo_path}}).encode("utf-8")
+        repo_name = os.path.basename(repo_path)
+        payload = json.dumps({{"diff": diff, "repoPath": repo_path, "repoName": repo_name}}).encode("utf-8")
         headers = {{"Content-Type": "application/json"}}
         
         req = urllib.request.Request(API_URL, data=payload, headers=headers)
@@ -195,7 +196,7 @@ def main():
             for attempt in range(max_attempts):
                 time.sleep(1)
                 try:
-                    test_req = urllib.request.Request(API_URL, data=json.dumps({{"diff": diff, "repoPath": repo_path}}).encode("utf-8"), headers={{"Content-Type": "application/json"}})
+                    test_req = urllib.request.Request(API_URL, data=json.dumps({{"diff": diff, "repoPath": repo_path, "repoName": repo_name}}).encode("utf-8"), headers={{"Content-Type": "application/json"}})
                     with urllib.request.urlopen(test_req, timeout=2) as test_response:
                         # Server is ready and we got a response
                         print("   ✅ Server is ready!")
