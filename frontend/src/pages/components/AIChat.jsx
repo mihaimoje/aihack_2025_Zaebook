@@ -54,11 +54,27 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
     }, [messages]);
 
     // Define the complex prompt based on the finding with diff context
+    const fullDiff = finding.diff || 'No diff available';
+    const diffLines = fullDiff.split('\n');
+    const isTruncated = diffLines.length > 20;
+    const truncatedDiff = isTruncated
+        ? diffLines.slice(0, 20).join('\n') + '\n... (truncated for display, full diff sent to AI)'
+        : fullDiff;
+
     const initialPrompt = `I have a ${finding.severity} issue on line ${finding.line_number}: "${finding.message}".
 
 Here is the relevant code diff:
 \`\`\`
-${finding.diff || 'No diff available'}
+${truncatedDiff}
+\`\`\`
+
+Please help me understand and fix this issue. Provide an explanation and a suggested code fix using markdown.`;
+
+    const fullPromptForAI = `I have a ${finding.severity} issue on line ${finding.line_number}: "${finding.message}".
+
+Here is the relevant code diff:
+\`\`\`
+${fullDiff}
 \`\`\`
 
 Please help me understand and fix this issue. Provide an explanation and a suggested code fix using markdown.`;
@@ -94,8 +110,9 @@ Please help me understand and fix this issue. Provide an explanation and a sugge
     // --- New: Handler for the Quick Query Button ---
     const handleQuickQuery = () => {
         if (isLoading || isCommitted) return;
-        // The user is asking the default question, send it directly
-        generateResponse(initialPrompt);
+        // Display the truncated version to the user, but send the full version to AI
+        setMessages(prev => [...prev, { sender: 'user', text: initialPrompt }]);
+        generateResponse(fullPromptForAI, true); // Pass flag to skip adding message again
     };
 
     // --- Clear Chat Handler ---
@@ -123,11 +140,13 @@ Please help me understand and fix this issue. Provide an explanation and a sugge
 
 
     // --- API Logic (Sends request to the dedicated backend endpoint) ---
-    const generateResponse = async (prompt) => {
+    const generateResponse = async (prompt, skipAddingMessage = false) => {
         setIsLoading(true);
 
-        // Add the user's prompt to the history immediately
-        setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
+        // Add the user's prompt to the history immediately (unless already added)
+        if (!skipAddingMessage) {
+            setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
+        }
 
         // Load custom settings from default profile in database
         let customSettings = {};

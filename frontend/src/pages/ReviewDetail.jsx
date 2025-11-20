@@ -12,6 +12,7 @@ const ReviewDetail = () => {
     const [error, setError] = useState(null);
     const [activeFinding, setActiveFinding] = useState(null);
     const [committing, setCommitting] = useState(false);
+    const [commitMessage, setCommitMessage] = useState('');
 
     useEffect(() => {
         fetch(`/api/reviews/${id}`)
@@ -55,6 +56,11 @@ const ReviewDetail = () => {
     const { findings = [], repoName, verdict, committedByUser, committedAt } = reviewData || {};
 
     const handleCommitAnyway = async () => {
+        if (!commitMessage.trim()) {
+            alert('Please enter a commit message');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to commit anyway, bypassing the AI review?')) {
             return;
         }
@@ -63,7 +69,8 @@ const ReviewDetail = () => {
         try {
             const response = await fetch(`/api/reviews/${id}/commit`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ commitMessage: commitMessage.trim() })
             });
 
             if (response.ok) {
@@ -140,9 +147,17 @@ const ReviewDetail = () => {
                 </div>
             ) : (
                 <div className={styles.commitButtonContainer}>
+                    <input
+                        type="text"
+                        value={commitMessage}
+                        onChange={(e) => setCommitMessage(e.target.value)}
+                        placeholder="Enter commit message..."
+                        className={styles.commitInput}
+                        disabled={committing}
+                    />
                     <button
                         onClick={handleCommitAnyway}
-                        disabled={committing}
+                        disabled={committing || !commitMessage.trim()}
                         className={styles.commitButton}
                     >
                         {committing ? 'Committing...' : 'Commit Anyway'}

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const { exec } = require('child_process');
 const axios = require('axios');
 const aiController = require('./controllers/aiController');
@@ -17,6 +18,9 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Big diffs need big limits
+
+// Serve static files from frontend build
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // DB Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ai_reviewer')
@@ -101,6 +105,7 @@ app.post('/api/reviews/:id/commit', async (req, res) => {
 
         // Allow passing repoPath in request body for older reviews or manual override
         const repoPath = review.repoPath || req.body.repoPath;
+        const commitMessage = req.body.commitMessage || 'Commit (bypassed AI review)';
 
         if (!repoPath) {
             return res.status(400).json({
@@ -119,8 +124,8 @@ app.post('/api/reviews/:id/commit', async (req, res) => {
                 return res.status(400).json({ error: 'No staged changes to commit. Please stage your changes first.' });
             }
 
-            // Execute git commit with --no-verify flag to bypass the hook in the repository directory
-            exec('git commit --no-verify', { cwd: repoPath }, (err, stdout, stderr) => {
+            // Execute git commit with --no-verify flag and custom message
+            exec(`git commit --no-verify -m "${commitMessage.replace(/"/g, '\\"')}"`, { cwd: repoPath }, (err, stdout, stderr) => {
                 if (err) {
                     console.error('Git commit error:', stderr);
                     return res.status(500).json({
@@ -149,6 +154,11 @@ app.post('/api/reviews/:id/commit', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+// Serve React app for any non-API routes (must be last)
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
