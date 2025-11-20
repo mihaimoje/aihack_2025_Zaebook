@@ -108,7 +108,7 @@ const ReviewDetail = () => {
                     return (
                         <div
                             key={index}
-                            onClick={() => setActiveFinding(finding)}
+                            onClick={() => setActiveFinding({ ...finding, findingIndex: index })}
                             className={`${styles.findingCard} ${isCritical ? styles.findingCardCritical : styles.findingCardSuggestion}`}
                         >
                             <div className={styles.findingContent}>
@@ -136,7 +136,12 @@ const ReviewDetail = () => {
             </div>
 
             {activeFinding && (
-                <AIChat finding={activeFinding} onClose={() => setActiveFinding(null)} />
+                <AIChat
+                    finding={activeFinding}
+                    reviewId={id}
+                    findingIndex={activeFinding.findingIndex}
+                    onClose={() => setActiveFinding(null)}
+                />
             )}
         </div>
     );
