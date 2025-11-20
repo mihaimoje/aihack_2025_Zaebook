@@ -57,13 +57,15 @@ exports.sendMessage = async (req, res) => {
         });
 
         // Build context-aware prompt for the AI
-        const baseInstructions = `You are a helpful coding assistant. A developer needs help with a code review finding.
+        const defaultSystemPrompt = `You are a helpful coding assistant specialized in code reviews. A developer needs help with a code review finding.`;
 
+        const baseInstructions = `
 Finding Details:
 - Severity: ${findingContext?.severity || 'Unknown'}
 - Line: ${findingContext?.line_number || 'Unknown'}
 - Issue: ${findingContext?.message || 'No description'}
 
+${findingContext?.diff ? `Code Diff:\n\`\`\`\n${findingContext.diff}\n\`\`\`\n` : ''}
 ${previousMessages ? `Previous Conversation:\n${previousMessages}\n\n` : ''}Current User Question: ${prompt}
 
 Instructions:
@@ -73,10 +75,11 @@ Instructions:
 - Keep responses concise and focused
 - Do not repeat or summarize previous messages`;
 
-        // Add custom system prompt if provided
-        const contextPrompt = systemPrompt
-            ? `${systemPrompt}\n\n${baseInstructions}`
-            : baseInstructions;
+        // Combine default system prompt with custom prompt (if provided)
+        const systemInstructions = systemPrompt
+            ? `${defaultSystemPrompt}\n\nAdditional Instructions: ${systemPrompt}`
+            : defaultSystemPrompt;
+        const contextPrompt = `${systemInstructions}\n\n${baseInstructions}`;
 
         console.log(`💬 Generating response for Review ${reviewId}, Finding ${findingIndex}...`);
         if (systemPrompt) console.log(`🔧 Using custom settings: model=${model}, temp=${temperature}, maxTokens=${maxTokens}`);
