@@ -1,0 +1,377 @@
+/* ------------------------------------------------------------------- */
+/* --- GENERAL FINDINGS STYLES (Existing) --- */
+/* ------------------------------------------------------------------- */
+.container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #f4f7f6;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 40px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    color: #333;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.findingsList {
+    list-style: none;
+    padding: 0;
+}
+
+.findingItem {
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    cursor: pointer; /* Indicate clickability */
+}
+
+.findingItem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.critical {
+    border-left-color: #d9534f; /* Red */
+}
+
+.suggestion {
+    border-left-color: #5cb85c; /* Green */
+}
+
+.iconWrapper {
+    font-size: 24px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.critical .iconWrapper {
+    color: #d9534f;
+}
+
+.suggestion .iconWrapper {
+    color: #5cb85c;
+}
+
+.content {
+    flex-grow: 1;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.severityTag {
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85em;
+    text-transform: uppercase;
+}
+
+.critical .severityTag {
+    background-color: #d9534f;
+}
+
+.suggestion .severityTag {
+    background-color: #5cb85c;
+}
+
+.lineNumber {
+    color: #6c757d;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.message {
+    margin: 0;
+    color: #495057;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* ------------------------------------------------------------------- */
+/* --- AIChat STYLES (New & Enhanced Contrast) --- */
+/* ------------------------------------------------------------------- */
+.chatOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.chatWindow {
+    background: white;
+    border-radius: 10px;
+    width: 95%;
+    max-width: 700px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.chatHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    background-color: #3f51b5; /* Primary color */
+    color: white;
+}
+
+.chatHeader h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: white;
+    transition: opacity 0.2s;
+}
+
+.closeButton:hover {
+    opacity: 0.8;
+}
+
+.chatBody {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #e8eaf6; /* Light gray-blue background for body */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* --- NEW: Welcome/Button Styles --- */
+.welcomeSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto;
+    width: 90%;
+    gap: 15px;
+}
+
+.quickQueryButton {
+    padding: 12px 25px; /* Slightly larger padding */
+    background-color: #4CAF50; /* Green color for action */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.quickQueryButton:hover {
+    background-color: #43a047;
+    transform: translateY(-1px);
+}
+
+.quickQueryButton:disabled {
+    background-color: #b0c4de;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+/* ------------------------------------ */
+
+/* System message (Welcome, context) */
+.systemMessage {
+    background-color: #e3f2fd; /* Very light blue */
+    color: #3f51b5;
+    padding: 15px; /* Increased padding */
+    border-radius: 8px; /* Slightly more rounded */
+    font-size: 0.95em;
+    text-align: center;
+    width: 100%;
+    border: 1px solid #bbdefb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin: 0; /* Override any chatBody margin */
+}
+
+.systemMessage p {
+    margin-top: 5px;
+    font-weight: 600;
+}
+
+.chatMessage {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    max-width: 85%; /* Reduced max-width to emphasize alignment */
+}
+
+.chatIcon {
+    font-size: 1.2em;
+    padding-top: 5px;
+    flex-shrink: 0;
+}
+
+.messageBubble {
+    padding: 12px 18px; /* Slightly larger padding */
+    border-radius: 20px;
+    word-break: break-word;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added shadow for depth */
+}
+
+.sourceList {
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px dashed #ccc;
+    font-size: 0.8em;
+}
+
+.sourceHeader {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    color: #555;
+}
+
+.sourceList ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sourceList a {
+    color: #3f51b5;
+    text-decoration: none;
+}
+
+
+/* ------------------------------------------------ */
+/* AI MESSAGE (LEFT ALIGNMENT - Stronger Contrast) */
+/* ------------------------------------------------ */
+.aiMessage {
+    align-self: flex-start;
+}
+
+.aiMessage .chatIcon {
+    color: #3f51b5;
+    order: 1;
+}
+
+.aiMessage .messageBubble {
+    background-color: #ffffff; /* White bubble for AI */
+    color: #333;
+    order: 2;
+    border: 1px solid #ddd;
+    border-bottom-left-radius: 6px; /* Squarer corner next to icon */
+}
+
+
+/* ------------------------------------------------ */
+/* USER MESSAGE (RIGHT ALIGNMENT - Stronger Contrast) */
+/* ------------------------------------------------ */
+.userMessage {
+    align-self: flex-end; /* Push the whole container to the right */
+    margin-left: auto;
+}
+
+.userMessage .chatIcon {
+    color: #4caf50;
+    order: 2; /* Icon after bubble */
+}
+
+.userMessage .messageBubble {
+    background-color: #4caf50; /* Solid User Color */
+    color: white;
+    order: 1; /* Bubble before icon */
+    border: 1px solid #388e3c; /* Darker border for depth */
+    border-bottom-right-radius: 6px; /* Squarer corner next to icon */
+}
+
+/* Loading Dots Animation */
+.loadingDots {
+    display: flex;
+    align-items: center;
+    height: 1.2em;
+}
+
+.loadingDots span {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: #999;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: bounce 0.6s infinite alternate;
+}
+
+.loadingDots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loadingDots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); opacity: 0.8; }
+    to { transform: translateY(-5px); opacity: 1; }
+}
+/* End Loading Dots */
+
+.chatInput {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    gap: 10px;
+    background-color: white;
+}
+
+.chatInput input {
+    flex-grow: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 1em;
+}
+
+.chatInput button {
+    padding: 10px 20px;
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chatInput button:disabled {
+    background-color: #9fa8da;
+    cursor: not-allowed;
+}
