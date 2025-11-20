@@ -117,7 +117,8 @@ def main():
 
     # 2. Send to Backend
     try:
-        payload = json.dumps({{"diff": diff}}).encode("utf-8")
+        repo_path = os.getcwd()
+        payload = json.dumps({{"diff": diff, "repoPath": repo_path}}).encode("utf-8")
         headers = {{"Content-Type": "application/json"}}
         
         req = urllib.request.Request(API_URL, data=payload, headers=headers)

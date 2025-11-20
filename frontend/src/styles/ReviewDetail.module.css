@@ -319,3 +319,84 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
+
+/* Commit Button Styles */
+.commitButtonContainer {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.commitButton {
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.commitButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(34, 197, 94, 0.5);
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.commitButton:disabled {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.commitButtonHint {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Committed Banner Styles */
+.committedBanner {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.2) 100%);
+    backdrop-filter: blur(10px);
+    padding: 1.25rem 1.75rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #86efac;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+}
+
+.committedBanner svg {
+    flex-shrink: 0;
+}
+
+/* Disabled Finding Card */
+.findingCardDisabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.findingCardDisabled:hover {
+    transform: none;
+    box-shadow: none;
+}

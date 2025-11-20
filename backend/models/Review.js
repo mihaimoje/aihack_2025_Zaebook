@@ -12,6 +12,7 @@ const FindingSchema = new mongoose.Schema({
 
 const ReviewSchema = new mongoose.Schema({
     repoName: { type: String, default: 'Unknown Repo' },
+    repoPath: { type: String },
     diff: { type: String, required: true },
     findings: [FindingSchema],
     verdict: {
@@ -19,6 +20,8 @@ const ReviewSchema = new mongoose.Schema({
         enum: ['APPROVED', 'REJECTED'],
         default: 'APPROVED'
     },
+    committedByUser: { type: Boolean, default: false },
+    committedAt: { type: Date },
     createdAt: { type: Date, default: Date.now }
 });
 

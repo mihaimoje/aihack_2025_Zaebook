@@ -46,6 +46,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const messagesEndRef = useRef(null);
+    const isCommitted = finding.reviewCommitted || false;
 
     // Auto-scroll to the bottom of the chat
     useEffect(() => {
@@ -85,7 +86,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
 
     // --- New: Handler for the Quick Query Button ---
     const handleQuickQuery = () => {
-        if (isLoading) return;
+        if (isLoading || isCommitted) return;
         // The user is asking the default question, send it directly
         generateResponse(initialPrompt);
     };
@@ -140,7 +141,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (input.trim() === '' || isLoading) return;
+        if (input.trim() === '' || isLoading || isCommitted) return;
         const query = input.trim();
         setInput(''); // Clear input after sending
         generateResponse(query);
@@ -158,6 +159,13 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
 
                 <div className={styles.chatBody}>
 
+                    {/* Committed Notice */}
+                    {isCommitted && (
+                        <div className={styles.committedNotice}>
+                            This review has been committed. Chat is read-only.
+                        </div>
+                    )}
+
                     {/* Loading History */}
                     {isLoadingHistory && (
                         <div className={styles.systemMessage}>
@@ -166,7 +174,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
                     )}
 
                     {/* --- WELCOME MESSAGE AND QUICK QUERY BUTTON (Renders only if no messages exist) --- */}
-                    {!isLoadingHistory && messages.length === 0 && (
+                    {!isLoadingHistory && messages.length === 0 && !isCommitted && (
                         <div className={styles.welcomeSection}>
                             <div className={styles.systemMessage}>
                                 Welcome to the AI Assistant! I am ready to help you fix this code review finding.
@@ -203,12 +211,12 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
                 <form onSubmit={handleSubmit} className={styles.chatInput}>
                     <input
                         type="text"
-                        placeholder={isLoading ? "Waiting for response..." : "Ask your question about the finding..."}
+                        placeholder={isCommitted ? "Chat is read-only (review committed)" : isLoading ? "Waiting for response..." : "Ask your question about the finding..."}
                         value={input}
                         onChange={handleInput}
-                        disabled={isLoading}
+                        disabled={isLoading || isCommitted}
                     />
-                    <button type="submit" disabled={isLoading}>
+                    <button type="submit" disabled={isLoading || isCommitted}>
                         {isLoading ? 'Sending...' : 'Send'}
                     </button>
                 </form>

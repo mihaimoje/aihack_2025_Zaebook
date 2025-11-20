@@ -11,6 +11,7 @@ const ReviewDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeFinding, setActiveFinding] = useState(null);
+    const [committing, setCommitting] = useState(false);
 
     useEffect(() => {
         fetch(`/api/reviews/${id}`)
@@ -51,7 +52,37 @@ const ReviewDetail = () => {
         );
     }
 
-    const { findings = [], repoName, verdict } = reviewData || {};
+    const { findings = [], repoName, verdict, committedByUser, committedAt } = reviewData || {};
+
+    const handleCommitAnyway = async () => {
+        if (!window.confirm('Are you sure you want to commit anyway, bypassing the AI review?')) {
+            return;
+        }
+
+        setCommitting(true);
+        try {
+            const response = await fetch(`/api/reviews/${id}/commit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Commit successful! ' + result.message);
+                // Reload review data to show committed state
+                const updatedReview = await fetch(`/api/reviews/${id}`).then(r => r.json());
+                setReviewData(updatedReview);
+            } else {
+                const error = await response.json();
+                alert('Failed to commit: ' + error.error);
+            }
+        } catch (err) {
+            console.error('Commit error:', err);
+            alert('Failed to commit: ' + err.message);
+        } finally {
+            setCommitting(false);
+        }
+    };
 
     if (!findings || findings.length === 0) {
         return (
@@ -102,13 +133,31 @@ const ReviewDetail = () => {
                 </div>
             </div>
 
+            {committedByUser ? (
+                <div className={styles.committedBanner}>
+                    <CheckCircle size={20} />
+                    <span>Committed by user on {new Date(committedAt).toLocaleString()}</span>
+                </div>
+            ) : (
+                <div className={styles.commitButtonContainer}>
+                    <button
+                        onClick={handleCommitAnyway}
+                        disabled={committing}
+                        className={styles.commitButton}
+                    >
+                        {committing ? 'Committing...' : 'Commit Anyway'}
+                    </button>
+                    <p className={styles.commitButtonHint}>Bypass AI review and commit changes</p>
+                </div>
+            )}
+
             <div className={styles.findingsList}>
                 {findings.map((finding, index) => {
                     const isCritical = finding.severity === 'CRITICAL';
                     return (
                         <div
                             key={index}
-                            onClick={() => setActiveFinding({ ...finding, findingIndex: index })}
+                            onClick={() => setActiveFinding({ ...finding, findingIndex: index, reviewCommitted: committedByUser })}
                             className={`${styles.findingCard} ${isCritical ? styles.findingCardCritical : styles.findingCardSuggestion}`}
                         >
                             <div className={styles.findingContent}>

@@ -28,7 +28,7 @@ ${diffContent}
 `;
 
 exports.reviewDiff = async (req, res) => {
-    const { diff, repoName } = req.body;
+    const { diff, repoName, repoPath } = req.body;
 
     if (!diff) return res.status(400).json({ error: "No diff provided" });
 
@@ -60,6 +60,7 @@ exports.reviewDiff = async (req, res) => {
         // 3. Save to DB
         const newReview = await Review.create({
             repoName: repoName,
+            repoPath: repoPath,
             diff: diff,
             findings: parsedData.findings || []
         });
