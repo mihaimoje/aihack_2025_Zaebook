@@ -7,7 +7,7 @@ import argparse
 
 # --- CONFIGURATION ---
 BACKEND_URL = "http://localhost:5000/api/review"
-DASHBOARD_URL = "http://localhost:5173/review"
+DASHBOARD_URL = "http://localhost:5000/review"
 
 def get_git_root(path=None):
     if path is None:
@@ -42,6 +42,10 @@ def install_hook(target_repo_path=None):
             return False
     
     print(f"📂 Installing hook in: {git_root}")
+    
+    # Get the absolute path to the backend directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_path = os.path.join(script_dir, "backend")
     
     hooks_dir = os.path.join(git_root, ".git", "hooks")
     os.makedirs(hooks_dir, exist_ok=True)
@@ -86,6 +90,7 @@ import os
 
 API_URL = "{BACKEND_URL}"
 DASHBOARD_BASE_URL = "{DASHBOARD_URL}"
+BACKEND_PATH = r"{backend_path}"
 
 def main():
     # Force UTF-8 encoding for stdout to handle emojis on Windows terminals
@@ -155,10 +160,91 @@ def main():
                 
                 sys.exit(1)
 
-    except urllib.error.URLError:
+    except urllib.error.URLError as url_error:
         print("⚠️ Could not connect to AI Backend (localhost:5000).")
-        print("   Skipping review (Fail Open).")
-        sys.exit(0)
+        print("   Attempting to start the server...")
+        try:
+            # Try to start the backend server
+            import platform
+            import time
+            
+            if not os.path.exists(BACKEND_PATH):
+                print(f"   Backend path not found: {{BACKEND_PATH}}")
+                print("   Please start the server manually with: cd backend && npm start")
+                sys.exit(1)
+            
+            if platform.system() == "Windows":
+                subprocess.Popen(
+                    ["cmd", "/c", "start", "cmd", "/k", "npm", "start"],
+                    cwd=BACKEND_PATH,
+                    shell=True
+                )
+            else:
+                subprocess.Popen(
+                    ["npm", "start"],
+                    cwd=BACKEND_PATH,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            
+            print("   Waiting for server to start...")
+            
+            # Wait up to 30 seconds for server to be ready
+            max_attempts = 30
+            server_ready = False
+            for attempt in range(max_attempts):
+                time.sleep(1)
+                try:
+                    test_req = urllib.request.Request(API_URL, data=json.dumps({{"diff": diff, "repoPath": repo_path}}).encode("utf-8"), headers={{"Content-Type": "application/json"}})
+                    with urllib.request.urlopen(test_req, timeout=2) as test_response:
+                        # Server is ready and we got a response
+                        print("   ✅ Server is ready!")
+                        
+                        if test_response.status == 200:
+                            data = json.loads(test_response.read().decode("utf-8"))
+                            
+                            is_approved = data.get("approved", True)
+                            review_id = data.get("reviewId", "")
+                            findings = data.get("findings", [])
+
+                            if is_approved:
+                                print("✅ AI Approved.")
+                                sys.exit(0)
+                            else:
+                                print("\\n❌ AI REJECTED COMMIT")
+                                print(f"Found {{len(findings)}} issues.")
+                                
+                                for f in findings:
+                                    if f.get('severity') == 'CRITICAL':
+                                        print(f" - [CRITICAL] line {{f.get('line_number')}}: {{f.get('message')}}")
+
+                                if review_id:
+                                    full_url = f"{{DASHBOARD_BASE_URL}}/{{review_id}}"
+                                    print(f"\\n👀 Opening detailed report: {{full_url}}")
+                                    try:
+                                        webbrowser.open(full_url)
+                                    except:
+                                        pass
+                                
+                                sys.exit(1)
+                        else:
+                            sys.exit(0)
+                        
+                except urllib.error.URLError:
+                    print(f"   Waiting... ({{attempt + 1}}/{{max_attempts}})")
+                    continue
+                except Exception as retry_error:
+                    print(f"   Error during retry: {{retry_error}}")
+                    continue
+            
+            print("   ⏱️ Server took too long to start.")
+            print("   Commit blocked. Please ensure the server starts successfully and try again.")
+            sys.exit(1)
+            
+        except Exception as start_error:
+            print(f"   Could not start server: {{start_error}}")
+            print(f"   Please start the server manually: cd {{BACKEND_PATH}} && npm start")
+            sys.exit(1)
     except Exception as e:
         print(f"⚠️ Error during review: {{e}}")
         sys.exit(0)
