@@ -1,0 +1,190 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { FaTimes, FaRobot, FaUser } from 'react-icons/fa';
+import styles from '../../styles/Review.module.css'; // Shared styles
+
+// --- GENERIC BACKEND ENDPOINT ---
+const BACKEND_ENDPOINT = "/api/chat";
+
+// Custom component to display a single chat message
+const ChatMessage = ({ sender, text, sources = [] }) => {
+    return (
+        <div className={`${styles.chatMessage} ${sender === 'ai' ? styles.aiMessage : styles.userMessage}`}>
+
+            {/* AI Icon (Left side) */}
+            {sender === 'ai' && <FaRobot className={styles.chatIcon} />}
+
+            {/* Message Bubble */}
+            <div className={styles.messageBubble}>
+                <p>{text}</p>
+                {sources.length > 0 && (
+                    <div className={styles.sourceList}>
+                        <p className={styles.sourceHeader}>Sources:</p>
+                        <ul>
+                            {sources.map((source, index) => (
+                                <li key={index}>
+                                    <a href={source.uri} target="_blank" rel="noopener noreferrer">
+                                        {source.title || new URL(source.uri).hostname}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+
+            {/* User Icon (Right side) */}
+            {sender === 'user' && <FaUser className={`${styles.chatIcon} ${styles.userIconAlignment}`} />}
+        </div>
+    );
+};
+
+
+const AIChat = ({ finding, onClose }) => {
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
+
+    // Auto-scroll to the bottom of the chat
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    // Define the complex prompt based on the finding (defined here for use by the button)
+    const initialPrompt = `Help me fix this ${finding.severity} issue on line ${finding.line_number}: "${finding.message}". Please provide an explanation and a suggested code snippet using markdown.`;
+
+
+    // Initial state setup (runs once when chat opens)
+    useEffect(() => {
+        // Start with an empty message array and empty input
+        setMessages([]);
+        setInput('');
+    }, [finding]);
+
+
+    // --- New: Handler for the Quick Query Button ---
+    const handleQuickQuery = () => {
+        if (isLoading) return;
+        // The user is asking the default question, send it directly
+        generateResponse(initialPrompt);
+    };
+
+
+    // --- API Logic (Sends request to the dedicated backend endpoint) ---
+    const generateResponse = async (prompt) => {
+        setIsLoading(true);
+
+        // Add the user's prompt to the history immediately
+        setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
+
+        // Simplified payload sent to your custom backend
+        const payload = {
+            prompt: prompt,
+            findingContext: finding
+        };
+
+        let responseText = "Sorry, I couldn't get a response from the backend server.";
+        let sources = [];
+
+        try {
+            const response = await fetch(BACKEND_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                // Expect the backend to return { text: "...", sources: [...] }
+                const result = await response.json();
+
+                responseText = result.text || responseText;
+                sources = result.sources || [];
+
+            } else {
+                responseText = `Backend Error: ${response.status} ${response.statusText}. Please check the server logs.`;
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            responseText = `Network Error: Failed to connect to ${BACKEND_ENDPOINT}.`;
+        }
+
+        setIsLoading(false);
+        setMessages(prev => [...prev, { sender: 'ai', text: responseText, sources }]);
+    };
+
+    // --- Input and Submit Handlers ---
+    const handleInput = (e) => setInput(e.target.value);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (input.trim() === '' || isLoading) return;
+        const query = input.trim();
+        setInput(''); // Clear input after sending
+        generateResponse(query);
+    };
+
+    return (
+        <div className={styles.chatOverlay}>
+            <div className={styles.chatWindow}>
+                <div className={styles.chatHeader}>
+                    <h3>AI Assistant: {finding.severity} Line {finding.line_number}</h3>
+                    <button onClick={onClose} className={styles.closeButton}>
+                        <FaTimes />
+                    </button>
+                </div>
+
+                <div className={styles.chatBody}>
+
+                    {/* --- WELCOME MESSAGE AND QUICK QUERY BUTTON (Renders only if no messages exist) --- */}
+                    {messages.length === 0 && (
+                        <div className={styles.welcomeSection}>
+                            <div className={styles.systemMessage}>
+                                Welcome to the AI Assistant! I am ready to help you fix this code review finding.
+                                <p>This finding is: **{finding.message}** (Line {finding.line_number})</p>
+                            </div>
+                            <button
+                                onClick={handleQuickQuery}
+                                className={styles.quickQueryButton}
+                                disabled={isLoading}
+                            >
+                                🤖 Start: "Help me fix this issue"
+                            </button>
+                        </div>
+                    )}
+                    {/* --------------------------------------------------------------------------------- */}
+
+                    {messages.map((msg, index) => (
+                        <ChatMessage key={index} sender={msg.sender} text={msg.text} sources={msg.sources} />
+                    ))}
+
+                    {isLoading && (
+                        <div className={`${styles.chatMessage} ${styles.aiMessage}`}>
+                            <FaRobot className={styles.chatIcon} />
+                            <div className={styles.messageBubble}>
+                                <div className={styles.loadingDots}>
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <form onSubmit={handleSubmit} className={styles.chatInput}>
+                    <input
+                        type="text"
+                        placeholder={isLoading ? "Waiting for response..." : "Ask your question about the finding..."}
+                        value={input}
+                        onChange={handleInput}
+                        disabled={isLoading}
+                    />
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Sending...' : 'Send'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default AIChat;
