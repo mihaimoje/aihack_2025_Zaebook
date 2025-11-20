@@ -51,4 +51,50 @@ app.get('/api/git/status', (req, res) => {
     });
 });
 
+// 5. AI Chat Endpoint (Used by Review Page Chat)
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { prompt, findingContext } = req.body;
+
+        if (!prompt) {
+            return res.status(400).json({ error: "No prompt provided" });
+        }
+
+        // Build context-aware prompt for the AI
+        const contextPrompt = `
+You are a helpful coding assistant. A developer needs help with a code review finding.
+
+Finding Details:
+- Severity: ${findingContext?.severity || 'Unknown'}
+- Line: ${findingContext?.line_number || 'Unknown'}
+- Issue: ${findingContext?.message || 'No description'}
+
+Developer Question: ${prompt}
+
+Please provide a clear, actionable response with code examples when applicable.
+`;
+
+        // Call Ollama
+        const aiResponse = await axios.post(process.env.OLLAMA_URL || "http://127.0.0.1:11434/api/generate", {
+            model: process.env.LLM_MODEL || "llama3",
+            prompt: contextPrompt,
+            stream: false
+        });
+
+        const responseText = aiResponse.data.response || "I couldn't generate a response.";
+
+        res.json({
+            text: responseText,
+            sources: [] // Can add sources later if needed
+        });
+
+    } catch (error) {
+        console.error("❌ Chat Error:", error.message);
+        res.status(500).json({
+            text: "Sorry, I encountered an error processing your request. Please try again.",
+            sources: []
+        });
+    }
+});
+
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
