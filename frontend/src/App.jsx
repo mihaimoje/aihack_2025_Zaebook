@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import Review from "./pages/Review";
+
+// 1. Define the mock data object
+const mockReviewData = {
+    "findings": [
+        {
+            "severity": "CRITICAL",
+            "line_number": 15,
+            "message": "Potential command injection vulnerability using os.system with user input."
+        },
+        {
+            "severity": "SUGGESTION",
+            "line_number": 8,
+            "message": "Function name 'proces_data' contains a typo and should be 'process_data'."
+        }
+    ]
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        // 2. Wrap everything in a Router components (typically BrowserRouter in index.js, but necessary here)
+        // Note: Assuming you have <BrowserRouter> wrapping App in your main entry file.
+        <div style={{ padding: '20px' }}> {/* Add a simple div for spacing */}
+            <Routes>
+                {/* 3. Pass the mock data as the required prop */}
+                <Route
+                    path="/"
+                    element={<Review findingsData={mockReviewData} />}
+                />
+            </Routes>
+        </div>
+    );
 }
 
-export default App
+export default App;
