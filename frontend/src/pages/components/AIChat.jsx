@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaTimes, FaRobot, FaUser } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
 import styles from '../../styles/Review.module.css'; // Shared styles
 
 // --- GENERIC BACKEND ENDPOINT ---
@@ -15,7 +16,7 @@ const ChatMessage = ({ sender, text, sources = [] }) => {
 
             {/* Message Bubble */}
             <div className={styles.messageBubble}>
-                <p>{text}</p>
+                <ReactMarkdown>{text}</ReactMarkdown>
                 {sources.length > 0 && (
                     <div className={styles.sourceList}>
                         <p className={styles.sourceHeader}>Sources:</p>
