@@ -91,15 +91,22 @@ const Review = () => {
                                         <h3 className={styles.reviewTitle}>
                                             <Github size={18} /> {review.repoName || 'Local Repository'}
                                         </h3>
-                                        {review.verdict === 'REJECTED' ? (
-                                            <span className={`${styles.badge} ${styles.badgeRejected}`}>
-                                                Rejected
-                                            </span>
-                                        ) : (
-                                            <span className={`${styles.badge} ${styles.badgeApproved}`}>
-                                                Approved
-                                            </span>
-                                        )}
+                                        <div className={styles.badgeGroup}>
+                                            {review.verdict === 'REJECTED' ? (
+                                                <span className={`${styles.badge} ${styles.badgeRejected}`}>
+                                                    Rejected
+                                                </span>
+                                            ) : (
+                                                <span className={`${styles.badge} ${styles.badgeApproved}`}>
+                                                    Approved
+                                                </span>
+                                            )}
+                                            {review.committedByUser && (
+                                                <span className={`${styles.badge} ${styles.badgeCommitted}`}>
+                                                    Committed Anyway
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <p className={styles.reviewDate}>
                                         <Calendar size={14} />
