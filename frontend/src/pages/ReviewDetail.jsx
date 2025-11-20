@@ -157,7 +157,12 @@ const ReviewDetail = () => {
                     return (
                         <div
                             key={index}
-                            onClick={() => setActiveFinding({ ...finding, findingIndex: index, reviewCommitted: committedByUser })}
+                            onClick={() => setActiveFinding({
+                                ...finding,
+                                findingIndex: index,
+                                reviewCommitted: committedByUser,
+                                diff: reviewData.diff
+                            })}
                             className={`${styles.findingCard} ${isCritical ? styles.findingCardCritical : styles.findingCardSuggestion}`}
                         >
                             <div className={styles.findingContent}>

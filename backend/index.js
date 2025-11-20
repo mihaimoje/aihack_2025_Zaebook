@@ -6,8 +6,10 @@ const { exec } = require('child_process');
 const axios = require('axios');
 const aiController = require('./controllers/aiController');
 const chatController = require('./controllers/chatController');
+const profileController = require('./controllers/profileController');
 const Review = require('./models/review');
 const Chat = require('./models/Chat');
+const AiProfile = require('./models/AiProfile');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,7 +20,23 @@ app.use(express.json({ limit: '50mb' })); // Big diffs need big limits
 
 // DB Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ai_reviewer')
-    .then(() => console.log('✅ MongoDB Connected'))
+    .then(async () => {
+        console.log('✅ MongoDB Connected');
+
+        // Create default profile if none exists
+        const existingDefault = await AiProfile.findOne({ isDefault: true });
+        if (!existingDefault) {
+            await AiProfile.create({
+                name: 'Default Assistant',
+                systemPrompt: 'You are a helpful AI assistant that reviews code changes and provides constructive feedback.',
+                temperature: 0.7,
+                maxTokens: 2000,
+                model: 'llama3:8b',
+                isDefault: true
+            });
+            console.log('✅ Default AI profile created');
+        }
+    })
     .catch(err => console.error('❌ DB Error:', err));
 
 // --- Routes ---
@@ -63,7 +81,15 @@ app.get('/api/chat/:reviewId/:findingIndex', chatController.getChatHistory);
 // 7. Delete Chat History for a Finding
 app.delete('/api/chat/:reviewId/:findingIndex', chatController.deleteChatHistory);
 
-// 8. Commit Anyway (Bypass AI Review)
+// 8. AI Profile Management
+app.get('/api/profiles', profileController.getAllProfiles);
+app.get('/api/profiles/default', profileController.getDefaultProfile);
+app.get('/api/profiles/:id', profileController.getProfile);
+app.post('/api/profiles', profileController.createProfile);
+app.put('/api/profiles/:id', profileController.updateProfile);
+app.delete('/api/profiles/:id', profileController.deleteProfile);
+
+// 9. Commit Anyway (Bypass AI Review)
 app.post('/api/reviews/:id/commit', async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);

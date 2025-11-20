@@ -53,8 +53,15 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Define the complex prompt based on the finding (defined here for use by the button)
-    const initialPrompt = `Help me fix this ${finding.severity} issue on line ${finding.line_number}: "${finding.message}". Please provide an explanation and a suggested code snippet using markdown.`;
+    // Define the complex prompt based on the finding with diff context
+    const initialPrompt = `I have a ${finding.severity} issue on line ${finding.line_number}: "${finding.message}".
+
+Here is the relevant code diff:
+\`\`\`
+${finding.diff || 'No diff available'}
+\`\`\`
+
+Please help me understand and fix this issue. Provide an explanation and a suggested code fix using markdown.`;
 
     // Load chat history on mount
     useEffect(() => {
@@ -91,6 +98,29 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
         generateResponse(initialPrompt);
     };
 
+    // --- Clear Chat Handler ---
+    const handleClearChat = async () => {
+        if (!window.confirm('Are you sure you want to clear this chat history? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/chat/${reviewId}/${findingIndex}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                setMessages([]);
+                alert('Chat history cleared successfully.');
+            } else {
+                alert('Failed to clear chat history.');
+            }
+        } catch (error) {
+            console.error('Clear chat error:', error);
+            alert('Failed to clear chat history: ' + error.message);
+        }
+    };
+
 
     // --- API Logic (Sends request to the dedicated backend endpoint) ---
     const generateResponse = async (prompt) => {
@@ -99,12 +129,30 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
         // Add the user's prompt to the history immediately
         setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
 
-        // Enhanced payload with review context
+        // Load custom settings from default profile in database
+        let customSettings = {};
+        try {
+            const profileResponse = await fetch('/api/profiles/default');
+            if (profileResponse.ok) {
+                const profile = await profileResponse.json();
+                customSettings = {
+                    systemPrompt: profile.systemPrompt,
+                    temperature: profile.temperature,
+                    maxTokens: profile.maxTokens,
+                    model: profile.model
+                };
+            }
+        } catch (error) {
+            console.error('Failed to load profile settings:', error);
+        }
+
+        // Enhanced payload with review context and custom settings
         const payload = {
             prompt: prompt,
             findingContext: finding,
             reviewId: reviewId,
-            findingIndex: findingIndex
+            findingIndex: findingIndex,
+            customSettings: customSettings
         };
 
         let responseText = "Sorry, I couldn't get a response from the backend server.";
@@ -152,9 +200,16 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
             <div className={styles.chatWindow}>
                 <div className={styles.chatHeader}>
                     <h3>AI Assistant: {finding.severity} Line {finding.line_number}</h3>
-                    <button onClick={onClose} className={styles.closeButton}>
-                        <FaTimes />
-                    </button>
+                    <div className={styles.headerButtons}>
+                        {!isCommitted && messages.length > 0 && (
+                            <button onClick={handleClearChat} className={styles.clearButton} title="Clear chat history">
+                                Clear
+                            </button>
+                        )}
+                        <button onClick={onClose} className={styles.closeButton}>
+                            <FaTimes />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.chatBody}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, CheckCircle, Github, Calendar } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Github, Calendar, Settings } from 'lucide-react';
 import styles from '../styles/Dashboard.module.css';
 
 const Review = () => {
@@ -58,8 +58,18 @@ const Review = () => {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.headerTitle}>Code Reviews</h1>
-                <p className={styles.headerSubtitle}>AI-powered commit analysis history</p>
+                <div>
+                    <h1 className={styles.headerTitle}>Code Reviews</h1>
+                    <p className={styles.headerSubtitle}>AI-powered commit analysis history</p>
+                </div>
+                <button
+                    onClick={() => navigate('/settings')}
+                    className={styles.settingsButton}
+                    title="AI Settings"
+                >
+                    <Settings size={20} />
+                    Settings
+                </button>
             </div>
 
             <div className={styles.reviewsList}>

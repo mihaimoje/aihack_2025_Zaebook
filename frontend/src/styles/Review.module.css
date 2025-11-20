@@ -155,6 +155,29 @@
     font-size: 1.2em;
 }
 
+.headerButtons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.clearButton {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.clearButton:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
 .closeButton {
     background: none;
     border: none;
