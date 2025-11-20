@@ -38,34 +38,34 @@ exports.sendMessage = async (req, res) => {
             });
         }
 
+        // Build conversation context from history (last 6 messages before current, for context)
+        const previousMessages = chatSession.messages
+            .slice(-6)
+            .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
+            .join('\n\n');
+
         // Add user message to history
         chatSession.messages.push({
             sender: 'user',
             text: prompt
         });
 
-        // Build conversation context from history (last 10 messages)
-        const conversationHistory = chatSession.messages
-            .slice(-10)
-            .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
-            .join('\n');
-
         // Build context-aware prompt for the AI
-        const contextPrompt = `
-You are a helpful coding assistant. A developer needs help with a code review finding.
+        const contextPrompt = `You are a helpful coding assistant. A developer needs help with a code review finding.
 
 Finding Details:
 - Severity: ${findingContext?.severity || 'Unknown'}
 - Line: ${findingContext?.line_number || 'Unknown'}
 - Issue: ${findingContext?.message || 'No description'}
 
-Conversation History:
-${conversationHistory}
+${previousMessages ? `Previous Conversation:\n${previousMessages}\n\n` : ''}Current User Question: ${prompt}
 
-Developer Question: ${prompt}
-
-Please provide a clear, actionable response with code examples when applicable. Use markdown formatting for code blocks.
-`;
+Instructions:
+- Respond ONLY to the current user question above
+- Provide a clear, actionable answer
+- Use markdown formatting for code blocks
+- Keep responses concise and focused
+- Do not repeat or summarize previous messages`;
 
         console.log(`💬 Generating response for Review ${reviewId}, Finding ${findingIndex}...`);
 
