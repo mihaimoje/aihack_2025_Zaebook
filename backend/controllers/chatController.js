@@ -1,0 +1,158 @@
+const axios = require('axios');
+const Chat = require('../models/Chat');
+
+// Configuration
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434/api/generate";
+const LLM_MODEL = process.env.LLM_MODEL || "llama3";
+
+/**
+ * Handle chat messages for a specific finding with conversation history
+ */
+exports.sendMessage = async (req, res) => {
+    try {
+        const { prompt, findingContext, reviewId, findingIndex } = req.body;
+
+        if (!prompt) {
+            return res.status(400).json({ error: "No prompt provided" });
+        }
+
+        if (!reviewId || findingIndex === undefined) {
+            return res.status(400).json({ error: "Review ID and finding index are required" });
+        }
+
+        // Find or create chat session for this finding
+        let chatSession = await Chat.findOne({
+            reviewId: reviewId,
+            findingIndex: findingIndex
+        });
+
+        if (!chatSession) {
+            // Create new chat session
+            chatSession = new Chat({
+                reviewId: reviewId,
+                findingIndex: findingIndex,
+                findingMessage: findingContext?.message || 'Unknown issue',
+                severity: findingContext?.severity || 'UNKNOWN',
+                lineNumber: findingContext?.line_number,
+                messages: []
+            });
+        }
+
+        // Add user message to history
+        chatSession.messages.push({
+            sender: 'user',
+            text: prompt
+        });
+
+        // Build conversation context from history (last 10 messages)
+        const conversationHistory = chatSession.messages
+            .slice(-10)
+            .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
+            .join('\n');
+
+        // Build context-aware prompt for the AI
+        const contextPrompt = `
+You are a helpful coding assistant. A developer needs help with a code review finding.
+
+Finding Details:
+- Severity: ${findingContext?.severity || 'Unknown'}
+- Line: ${findingContext?.line_number || 'Unknown'}
+- Issue: ${findingContext?.message || 'No description'}
+
+Conversation History:
+${conversationHistory}
+
+Developer Question: ${prompt}
+
+Please provide a clear, actionable response with code examples when applicable. Use markdown formatting for code blocks.
+`;
+
+        console.log(`💬 Generating response for Review ${reviewId}, Finding ${findingIndex}...`);
+
+        // Call Ollama
+        const aiResponse = await axios.post(OLLAMA_URL, {
+            model: LLM_MODEL,
+            prompt: contextPrompt,
+            stream: false
+        });
+
+        const responseText = aiResponse.data.response || "I couldn't generate a response.";
+
+        // Add AI response to history
+        chatSession.messages.push({
+            sender: 'ai',
+            text: responseText
+        });
+
+        // Save chat session
+        await chatSession.save();
+
+        console.log(`✅ Chat saved: ${chatSession.messages.length} messages total`);
+
+        res.json({
+            text: responseText,
+            sources: [],
+            chatId: chatSession._id,
+            messageCount: chatSession.messages.length
+        });
+
+    } catch (error) {
+        console.error("❌ Chat Error:", error.message);
+        res.status(500).json({
+            text: "Sorry, I encountered an error processing your request. Please try again.",
+            sources: []
+        });
+    }
+};
+
+/**
+ * Get chat history for a specific finding
+ */
+exports.getChatHistory = async (req, res) => {
+    try {
+        const { reviewId, findingIndex } = req.params;
+
+        const chatSession = await Chat.findOne({
+            reviewId: reviewId,
+            findingIndex: parseInt(findingIndex)
+        });
+
+        if (!chatSession) {
+            return res.json({ messages: [] });
+        }
+
+        res.json({
+            messages: chatSession.messages,
+            chatId: chatSession._id,
+            findingMessage: chatSession.findingMessage,
+            severity: chatSession.severity
+        });
+    } catch (error) {
+        console.error("❌ Get Chat Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Delete chat history for a specific finding
+ */
+exports.deleteChatHistory = async (req, res) => {
+    try {
+        const { reviewId, findingIndex } = req.params;
+
+        const result = await Chat.deleteOne({
+            reviewId: reviewId,
+            findingIndex: parseInt(findingIndex)
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: "Chat not found" });
+        }
+
+        console.log(`🗑️ Deleted chat for Review ${reviewId}, Finding ${findingIndex}`);
+        res.json({ message: "Chat history deleted successfully" });
+    } catch (error) {
+        console.error("❌ Delete Chat Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+};

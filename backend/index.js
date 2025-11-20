@@ -3,8 +3,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { exec } = require('child_process');
+const axios = require('axios');
 const aiController = require('./controllers/aiController');
+const chatController = require('./controllers/chatController');
 const Review = require('./models/review');
+const Chat = require('./models/Chat');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,5 +53,14 @@ app.get('/api/git/status', (req, res) => {
         res.json({ output: stdout });
     });
 });
+
+// 5. AI Chat Endpoint with History (Used by Review Page Chat)
+app.post('/api/chat', chatController.sendMessage);
+
+// 6. Get Chat History for a Finding
+app.get('/api/chat/:reviewId/:findingIndex', chatController.getChatHistory);
+
+// 7. Delete Chat History for a Finding
+app.delete('/api/chat/:reviewId/:findingIndex', chatController.deleteChatHistory);
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

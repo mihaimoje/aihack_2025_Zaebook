@@ -39,10 +39,11 @@ const ChatMessage = ({ sender, text, sources = [] }) => {
 };
 
 
-const AIChat = ({ finding, onClose }) => {
+const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const messagesEndRef = useRef(null);
 
     // Auto-scroll to the bottom of the chat
@@ -53,13 +54,32 @@ const AIChat = ({ finding, onClose }) => {
     // Define the complex prompt based on the finding (defined here for use by the button)
     const initialPrompt = `Help me fix this ${finding.severity} issue on line ${finding.line_number}: "${finding.message}". Please provide an explanation and a suggested code snippet using markdown.`;
 
-
-    // Initial state setup (runs once when chat opens)
+    // Load chat history on mount
     useEffect(() => {
-        // Start with an empty message array and empty input
-        setMessages([]);
+        const loadChatHistory = async () => {
+            if (!reviewId || findingIndex === undefined) {
+                setIsLoadingHistory(false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/chat/${reviewId}/${findingIndex}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.messages && data.messages.length > 0) {
+                        setMessages(data.messages);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load chat history:", error);
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
+
+        loadChatHistory();
         setInput('');
-    }, [finding]);
+    }, [reviewId, findingIndex]);
 
 
     // --- New: Handler for the Quick Query Button ---
@@ -77,10 +97,12 @@ const AIChat = ({ finding, onClose }) => {
         // Add the user's prompt to the history immediately
         setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
 
-        // Simplified payload sent to your custom backend
+        // Enhanced payload with review context
         const payload = {
             prompt: prompt,
-            findingContext: finding
+            findingContext: finding,
+            reviewId: reviewId,
+            findingIndex: findingIndex
         };
 
         let responseText = "Sorry, I couldn't get a response from the backend server.";
@@ -135,8 +157,15 @@ const AIChat = ({ finding, onClose }) => {
 
                 <div className={styles.chatBody}>
 
+                    {/* Loading History */}
+                    {isLoadingHistory && (
+                        <div className={styles.systemMessage}>
+                            Loading chat history...
+                        </div>
+                    )}
+
                     {/* --- WELCOME MESSAGE AND QUICK QUERY BUTTON (Renders only if no messages exist) --- */}
-                    {messages.length === 0 && (
+                    {!isLoadingHistory && messages.length === 0 && (
                         <div className={styles.welcomeSection}>
                             <div className={styles.systemMessage}>
                                 Welcome to the AI Assistant! I am ready to help you fix this code review finding.

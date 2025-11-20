@@ -1,0 +1,321 @@
+/* Review Detail Page Styles - Dark Mode */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.backButton {
+    margin-bottom: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #60a5fa;
+    font-weight: 700;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    cursor: pointer;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s;
+}
+
+.backButton:hover {
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateX(-4px);
+}
+
+.reviewHeader {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.headerInfo {
+    flex: 1;
+}
+
+.headerTitle {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.badgeRejected {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: #fef2f2;
+}
+
+.badgeApproved {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #f0fdf4;
+}
+
+.repoName {
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.headerStats {
+    text-align: right;
+}
+
+.statsNumber {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.statsLabel {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.findingsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.findingCard {
+    position: relative;
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+    backdrop-filter: blur(10px);
+}
+
+.findingCard:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.findingCardCritical {
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+.findingCardCritical:hover {
+    border-color: rgba(220, 38, 38, 0.5);
+    box-shadow: 0 12px 40px rgba(220, 38, 38, 0.3);
+}
+
+.findingCardSuggestion {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.findingCardSuggestion:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.3);
+}
+
+.findingContent {
+    display: flex;
+    gap: 1rem;
+}
+
+.findingIcon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.findingIconCritical {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(153, 27, 27, 0.2) 100%);
+    color: #f87171;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+.findingCard:hover .findingIconCritical {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(153, 27, 27, 0.3) 100%);
+    transform: scale(1.05);
+}
+
+.findingIconSuggestion {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+    color: #60a5fa;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.findingCard:hover .findingIconSuggestion {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+    transform: scale(1.05);
+}
+
+.findingDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.findingMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.severityBadge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.25rem 0.65rem;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.severityBadgeCritical {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: #fef2f2;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+}
+
+.severityBadgeSuggestion {
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    color: #eff6ff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.lineNumber {
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.findingMessage {
+    color: #cbd5e1;
+    font-weight: 500;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.findingArrow {
+    display: flex;
+    align-items: center;
+    color: #475569;
+    transition: all 0.3s;
+}
+
+.findingCard:hover .findingArrow {
+    color: #94a3b8;
+    transform: translateX(0.5rem);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.6) 100%);
+    backdrop-filter: blur(10px);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    text-align: center;
+}
+
+.emptyIcon {
+    width: 5rem;
+    height: 5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #f0fdf4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+.emptyTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f1f5f9;
+    margin-bottom: 0.75rem;
+}
+
+.emptyText {
+    color: #94a3b8;
+    font-size: 1.05rem;
+}
+
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+}
+
+.errorText {
+    color: #f87171;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.errorButton {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.errorButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
