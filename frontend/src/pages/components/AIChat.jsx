@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaTimes, FaRobot, FaUser } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
 import styles from '../../styles/Review.module.css'; // Shared styles
 
 // --- GENERIC BACKEND ENDPOINT ---
@@ -15,7 +16,7 @@ const ChatMessage = ({ sender, text, sources = [] }) => {
 
             {/* Message Bubble */}
             <div className={styles.messageBubble}>
-                <p>{text}</p>
+                <ReactMarkdown>{text}</ReactMarkdown>
                 {sources.length > 0 && (
                     <div className={styles.sourceList}>
                         <p className={styles.sourceHeader}>Sources:</p>
@@ -45,14 +46,22 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const messagesEndRef = useRef(null);
+    const isCommitted = finding.reviewCommitted || false;
 
     // Auto-scroll to the bottom of the chat
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Define the complex prompt based on the finding (defined here for use by the button)
-    const initialPrompt = `Help me fix this ${finding.severity} issue on line ${finding.line_number}: "${finding.message}". Please provide an explanation and a suggested code snippet using markdown.`;
+    // Define the complex prompt based on the finding with diff context
+    const initialPrompt = `I have a ${finding.severity} issue on line ${finding.line_number}: "${finding.message}".
+
+Here is the relevant code diff:
+\`\`\`
+${finding.diff || 'No diff available'}
+\`\`\`
+
+Please help me understand and fix this issue. Provide an explanation and a suggested code fix using markdown.`;
 
     // Load chat history on mount
     useEffect(() => {
@@ -84,9 +93,32 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
 
     // --- New: Handler for the Quick Query Button ---
     const handleQuickQuery = () => {
-        if (isLoading) return;
+        if (isLoading || isCommitted) return;
         // The user is asking the default question, send it directly
         generateResponse(initialPrompt);
+    };
+
+    // --- Clear Chat Handler ---
+    const handleClearChat = async () => {
+        if (!window.confirm('Are you sure you want to clear this chat history? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/chat/${reviewId}/${findingIndex}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                setMessages([]);
+                alert('Chat history cleared successfully.');
+            } else {
+                alert('Failed to clear chat history.');
+            }
+        } catch (error) {
+            console.error('Clear chat error:', error);
+            alert('Failed to clear chat history: ' + error.message);
+        }
     };
 
 
@@ -97,12 +129,30 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
         // Add the user's prompt to the history immediately
         setMessages(prev => [...prev, { sender: 'user', text: prompt }]);
 
-        // Enhanced payload with review context
+        // Load custom settings from default profile in database
+        let customSettings = {};
+        try {
+            const profileResponse = await fetch('/api/profiles/default');
+            if (profileResponse.ok) {
+                const profile = await profileResponse.json();
+                customSettings = {
+                    systemPrompt: profile.systemPrompt,
+                    temperature: profile.temperature,
+                    maxTokens: profile.maxTokens,
+                    model: profile.model
+                };
+            }
+        } catch (error) {
+            console.error('Failed to load profile settings:', error);
+        }
+
+        // Enhanced payload with review context and custom settings
         const payload = {
             prompt: prompt,
             findingContext: finding,
             reviewId: reviewId,
-            findingIndex: findingIndex
+            findingIndex: findingIndex,
+            customSettings: customSettings
         };
 
         let responseText = "Sorry, I couldn't get a response from the backend server.";
@@ -139,7 +189,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (input.trim() === '' || isLoading) return;
+        if (input.trim() === '' || isLoading || isCommitted) return;
         const query = input.trim();
         setInput(''); // Clear input after sending
         generateResponse(query);
@@ -150,12 +200,26 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
             <div className={styles.chatWindow}>
                 <div className={styles.chatHeader}>
                     <h3>AI Assistant: {finding.severity} Line {finding.line_number}</h3>
-                    <button onClick={onClose} className={styles.closeButton}>
-                        <FaTimes />
-                    </button>
+                    <div className={styles.headerButtons}>
+                        {!isCommitted && messages.length > 0 && (
+                            <button onClick={handleClearChat} className={styles.clearButton} title="Clear chat history">
+                                Clear
+                            </button>
+                        )}
+                        <button onClick={onClose} className={styles.closeButton}>
+                            <FaTimes />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.chatBody}>
+
+                    {/* Committed Notice */}
+                    {isCommitted && (
+                        <div className={styles.committedNotice}>
+                            This review has been committed. Chat is read-only.
+                        </div>
+                    )}
 
                     {/* Loading History */}
                     {isLoadingHistory && (
@@ -165,7 +229,7 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
                     )}
 
                     {/* --- WELCOME MESSAGE AND QUICK QUERY BUTTON (Renders only if no messages exist) --- */}
-                    {!isLoadingHistory && messages.length === 0 && (
+                    {!isLoadingHistory && messages.length === 0 && !isCommitted && (
                         <div className={styles.welcomeSection}>
                             <div className={styles.systemMessage}>
                                 Welcome to the AI Assistant! I am ready to help you fix this code review finding.
@@ -202,12 +266,12 @@ const AIChat = ({ finding, reviewId, findingIndex, onClose }) => {
                 <form onSubmit={handleSubmit} className={styles.chatInput}>
                     <input
                         type="text"
-                        placeholder={isLoading ? "Waiting for response..." : "Ask your question about the finding..."}
+                        placeholder={isCommitted ? "Chat is read-only (review committed)" : isLoading ? "Waiting for response..." : "Ask your question about the finding..."}
                         value={input}
                         onChange={handleInput}
-                        disabled={isLoading}
+                        disabled={isLoading || isCommitted}
                     />
-                    <button type="submit" disabled={isLoading}>
+                    <button type="submit" disabled={isLoading || isCommitted}>
                         {isLoading ? 'Sending...' : 'Send'}
                     </button>
                 </form>

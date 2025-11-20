@@ -10,7 +10,7 @@ const LLM_MODEL = process.env.LLM_MODEL || "llama3";
  */
 exports.sendMessage = async (req, res) => {
     try {
-        const { prompt, findingContext, reviewId, findingIndex } = req.body;
+        const { prompt, findingContext, reviewId, findingIndex, customSettings } = req.body;
 
         if (!prompt) {
             return res.status(400).json({ error: "No prompt provided" });
@@ -19,6 +19,12 @@ exports.sendMessage = async (req, res) => {
         if (!reviewId || findingIndex === undefined) {
             return res.status(400).json({ error: "Review ID and finding index are required" });
         }
+
+        // Use custom settings if provided, otherwise use defaults
+        const model = customSettings?.model || LLM_MODEL;
+        const temperature = customSettings?.temperature !== undefined ? customSettings.temperature : 0.7;
+        const maxTokens = customSettings?.maxTokens || 2000;
+        const systemPrompt = customSettings?.systemPrompt || '';
 
         // Find or create chat session for this finding
         let chatSession = await Chat.findOne({
@@ -38,43 +44,55 @@ exports.sendMessage = async (req, res) => {
             });
         }
 
+        // Build conversation context from history (last 6 messages before current, for context)
+        const previousMessages = chatSession.messages
+            .slice(-6)
+            .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
+            .join('\n\n');
+
         // Add user message to history
         chatSession.messages.push({
             sender: 'user',
             text: prompt
         });
 
-        // Build conversation context from history (last 10 messages)
-        const conversationHistory = chatSession.messages
-            .slice(-10)
-            .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
-            .join('\n');
-
         // Build context-aware prompt for the AI
-        const contextPrompt = `
-You are a helpful coding assistant. A developer needs help with a code review finding.
+        const baseInstructions = `You are a helpful coding assistant. A developer needs help with a code review finding.
 
 Finding Details:
 - Severity: ${findingContext?.severity || 'Unknown'}
 - Line: ${findingContext?.line_number || 'Unknown'}
 - Issue: ${findingContext?.message || 'No description'}
 
-Conversation History:
-${conversationHistory}
+${previousMessages ? `Previous Conversation:\n${previousMessages}\n\n` : ''}Current User Question: ${prompt}
 
-Developer Question: ${prompt}
+Instructions:
+- Respond ONLY to the current user question above
+- Provide a clear, actionable answer
+- Use markdown formatting for code blocks
+- Keep responses concise and focused
+- Do not repeat or summarize previous messages`;
 
-Please provide a clear, actionable response with code examples when applicable. Use markdown formatting for code blocks.
-`;
+        // Add custom system prompt if provided
+        const contextPrompt = systemPrompt
+            ? `${systemPrompt}\n\n${baseInstructions}`
+            : baseInstructions;
 
         console.log(`💬 Generating response for Review ${reviewId}, Finding ${findingIndex}...`);
+        if (systemPrompt) console.log(`🔧 Using custom settings: model=${model}, temp=${temperature}, maxTokens=${maxTokens}`);
 
-        // Call Ollama
-        const aiResponse = await axios.post(OLLAMA_URL, {
-            model: LLM_MODEL,
+        // Call Ollama with custom settings
+        const ollamaPayload = {
+            model: model,
             prompt: contextPrompt,
-            stream: false
-        });
+            stream: false,
+            options: {
+                temperature: temperature,
+                num_predict: maxTokens
+            }
+        };
+
+        const aiResponse = await axios.post(OLLAMA_URL, ollamaPayload);
 
         const responseText = aiResponse.data.response || "I couldn't generate a response.";
 

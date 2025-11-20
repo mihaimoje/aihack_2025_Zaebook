@@ -1,0 +1,379 @@
+/* Settings Page Styles - Dark Mode */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.backButton {
+    margin-bottom: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #60a5fa;
+    font-weight: 700;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    cursor: pointer;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s;
+}
+
+.backButton:hover {
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateX(-4px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.headerIcon {
+    display: inline-flex;
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+.settingsCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.settingGroup {
+    margin-bottom: 1.5rem;
+}
+
+.settingRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.labelHint {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0.75rem;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.textarea {
+    resize: vertical;
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+}
+
+.infoBox {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.infoBox p {
+    color: #93c5fd;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.saveMessage {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.2) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #86efac;
+    padding: 0.875rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.resetButton,
+.saveButton {
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.resetButton {
+    background: rgba(148, 163, 184, 0.2);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.resetButton:hover {
+    background: rgba(148, 163, 184, 0.3);
+    transform: translateY(-2px);
+}
+
+.resetButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.saveButton {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+.saveButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
+}
+
+.saveButton:disabled {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Profile Management Styles */
+.profilesCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    margin-bottom: 2rem;
+}
+
+.profilesHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+}
+
+.newProfileButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.newProfileButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+}
+
+.profilesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.profileItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.profileItem:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: translateX(4px);
+}
+
+.profileItemActive {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.profileInfo {
+    flex: 1;
+}
+
+.profileName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.defaultStar {
+    color: #fbbf24;
+    fill: #fbbf24;
+}
+
+.profileMeta {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.profileActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.iconButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: rgba(148, 163, 184, 0.2);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 0.5rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+}
+
+.iconButton:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: #8b5cf6;
+    color: #e9d5ff;
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .settingRow {
+        grid-template-columns: 1fr;
+    }
+
+    .buttonGroup {
+        flex-direction: column;
+    }
+
+    .resetButton,
+    .saveButton {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .profilesHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .newProfileButton {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .profileItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .profileActions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
