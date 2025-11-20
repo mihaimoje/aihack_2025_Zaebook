@@ -148,6 +148,7 @@
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .reviewTitle {
@@ -157,6 +158,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.badgeGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .badge {
@@ -177,6 +185,11 @@
 .badgeApproved {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: #f0fdf4;
+}
+
+.badgeCommitted {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fffbeb;
 }
 
 .reviewDate {
